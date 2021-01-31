@@ -1,5 +1,6 @@
 <?php
 session_start();
+require('../dbconnnect.php');
 
 if (!empty($_POST)) {
 	if ($_POST['name'] === '') {
@@ -20,6 +21,15 @@ if (!empty($_POST)) {
 		$ext = substr($fileName, -3);
 		if ($ext != 'jpg' && $ext != 'gif' && $ext != 'png') {
 			$error['image'] = 'type';
+		}
+	}
+	// 重複チェック
+	if (empty($error)) {
+		$member = $db->prepare('SELECT COUNT(*) AS cnt FROM members WHERE email=?');
+		$member->execute(array($_POST['email']));
+		$record = $member->fetch();
+		if ($record['cnt'] > 0) {
+			$error['email'] = 'duplicate';
 		}
 	}
 
@@ -72,6 +82,9 @@ if ($_REQUEST['action'] == 'rewite' && isset($_SESSION['join'])) {
 						<input type="text" name="email" size="35" maxlength="255" value="<?php print(htmlspecialchars($_POST['email'], ENT_QUOTES)); ?>" />
 						<?php if ($error['email'] === 'brank') : ?>
 							<p class='error'>※emailを入力して下さい</p>
+						<?php endif; ?>
+						<?php if ($error['email'] === 'duplicate') : ?>
+							<p class='error'>※指定されたemailは、すでに登録されています</p>
 						<?php endif; ?>
 					<dt>パスワード<span class="required">必須</span></dt>
 					<dd>
