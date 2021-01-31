@@ -14,8 +14,20 @@ if (!empty($_POST)) {
 	if ($_POST['password'] === '') {
 		$error['password'] = 'brank';
 	}
+
+	$fileName = $_FILES['image']['name'];
+	if (!empty($fileName)) {
+		$ext = substr($fileName, -3);
+		if ($ext != 'jpg' && $ext != 'gif' && $ext != 'png') {
+			$error['image'] = 'type';
+		}
+	}
+
 	if (empty($error)) {
+		$image = date('YmdHis') . $_FILES['image']['name'];
+		move_uploaded_file($_FILES['image']['tmp_name'], '../member_picture/' . $image);
 		$_SESSION['join'] = $_POST;
+		$_SESSION['join']['image'] = $image;
 		header('Location: check.php');
 		exit();
 	}
@@ -74,6 +86,12 @@ if ($_REQUEST['action'] == 'rewite' && isset($_SESSION['join'])) {
 					<dt>写真など</dt>
 					<dd>
 						<input type="file" name="image" size="35" value="test" />
+						<?php if ($error['image'] === 'type') : ?>
+							<p class="error">※指定された形式で写真を指定して下さい</p>
+						<?php endif; ?>
+						<?php if (!empty($error)) : ?>
+							<p class="error">画像を入れて下さい</p>
+						<?php endif; ?>
 					</dd>
 				</dl>
 				<div><input type="submit" value="入力内容を確認する" /></div>
